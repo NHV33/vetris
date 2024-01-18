@@ -24,16 +24,6 @@ function makeGrid() {
             newCell.append(square);
         }
     }
-    // let count = 0
-    // console.log(gridRows);
-    // Object.keys(grid).forEach(key => {
-    //     if (!('position' in grid[key])) {
-    //         console.log(key)
-    //         count += 1;
-    //     }
-    // });
-    // console.log(count)
-    // console.log(grid)
 }
 
 
@@ -43,8 +33,6 @@ function p(x, y) {
 
 function inBounds(pos) {
     return (pos.x >= 0 && pos.x < gridWidth && pos.y >= 0 && pos.y < gridHeight);
-    // console.log(valid);
-    // return valid;
 }
 
 function pStatus(pos) {
@@ -135,7 +123,6 @@ let activePiece = null;
 let score = 0;
 
 function mainLoop() {
-    // if (pieceOverflow()) { onGameOver(); }
     shiftDownByRows(clearableRows);
     if (![undefined, null].includes(activePiece)) {
         const wasMoved = movePiece(activePiece, "down");
@@ -146,7 +133,6 @@ function mainLoop() {
     }
     clearableRows = findClearable();
     markCleared(clearableRows);
-    // update();
 }
 
 function calculateLevel() {
@@ -340,7 +326,6 @@ function shiftDown(rowNumber) {
             if (yPos >= rowNumber && !thisSquare.active) {
                 const abovePos = translate(thisSquare.position, p(0,1));
                 const aboveSquare = pStatus(abovePos);
-                // if (aboveSquare !== null && !thisSquare.active) {
                 if (aboveSquare !== null && !aboveSquare.active) {
                     thisSquare.color = aboveSquare.color;
                 } else {
@@ -356,7 +341,6 @@ function setScore(rowCount) {
     const rowScore = 100;
     rowsCleared += rowCount;
     score += rowScore * rowCount * rowCount;
-    // console.log(score);
     drawStats(score, calculateLevel());
 }
 
@@ -370,8 +354,6 @@ function shiftDownByRows(rows2clear) {
 }
 
 function markCleared(rows2clear) {
-    // Object.keys(grid)
-    // ${grid[key].color}
     rows2clear.forEach(n => {
         gridRows[n].forEach(key => {
             grid[key].color = "cleared";
@@ -430,7 +412,6 @@ function drawStats(score, level) {
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.font = "4vmin monospace";
-    // ctx.textAlign = "center";
     ctx.textBaseline = "top";
     ctx.fillStyle = "white";
     ctx.fillText(`Level: ${level}`, 0, 10);
