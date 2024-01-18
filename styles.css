@@ -7,6 +7,15 @@ body {
     overflow: hidden;
 }
 
+#canvas {
+    width: calc(var(--grid-size) * 1.3 * 9 );
+    /* height: calc(var(--grid-size) * 1.3 * 3 ); */
+    /* border: 1px solid white; */
+    /* margin: auto; */
+    position: absolute;
+    z-index: 2;
+}
+
 #end-zone {
     /* justify-self: start; */
     /* align-self: start; */

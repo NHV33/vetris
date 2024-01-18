@@ -149,20 +149,29 @@ function mainLoop() {
     // update();
 }
 
+function calculateLevel() {
+    return Math.floor(rowsCleared / 10) + 1;
+}
+
+function updateInterval() {
+    const startValue = 33;
+    return startValue - calculateLevel() - 1;
+}
+
 let ticks = 0;
-let updateInterval = 33; // smaller is faster
 let rowsCleared = 0;
 
 function resetGame() {
     console.log("game reset");
-    ticks = 0;
-    rowsCleared = 0;
-    score = 0;
     gameover = false;
+    ticks = 0;
+    score = 0;
+    rowsCleared = 0;
+    drawStats(0, 1);
     // clock
     setInterval(() => {
         if (inPlay) {
-            if (ticks % updateInterval === 0 ) {
+            if (ticks % updateInterval() === 0) {
                 mainLoop();
             }
             update();
@@ -342,12 +351,13 @@ function shiftDown(rowNumber) {
     }
 }
 
-const rowScore = 100;
 
 function setScore(rowCount) {
+    const rowScore = 100;
     rowsCleared += rowCount;
     score += rowScore * rowCount * rowCount;
-    console.log(score);
+    // console.log(score);
+    drawStats(score, calculateLevel());
 }
 
 function shiftDownByRows(rows2clear) {
@@ -414,3 +424,15 @@ document.addEventListener('keydown', (event) => {
         movePiece(activePiece, "right");
     }
 });
+
+function drawStats(score, level) {
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.font = "4vmin monospace";
+    // ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    ctx.fillStyle = "white";
+    ctx.fillText(`Level: ${level}`, 0, 10);
+    ctx.fillText(`Score: ${score}`, 0, 40);
+  }
