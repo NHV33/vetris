@@ -3,6 +3,7 @@ const gridWidth = 9;
 const grid = {};
 const domGrid = document.getElementById("grid");
 const gridRows = {};
+const endZone = 4;
 
 function makeGrid() {
     for (let y = gridHeight - 1; y >= 0; y -= 1) {
@@ -11,7 +12,8 @@ function makeGrid() {
         for (let x = 0; x < gridWidth; x += 1) {
             gridRows[y].push(`${x}*${y}`)
             const position = { x: x, y: y };
-            grid[`${x}*${y}`] = { color: "blank", active: false, position: position };
+            const zone = (y >= gridHeight - endZone) ? "end-bg" : "def-bg";
+            grid[`${x}*${y}`] = { active: false, color: "blank", zone: zone, position: position };
             const newCell = newRow.insertCell();
             newCell.id = `cell*${x}*${y}`;
             const square = document.createElement("div");
@@ -103,13 +105,37 @@ function slamDown(piece) {
     update();
 }
 
+function onGameOver() {
+    inPlay = false;
+    gameover = true;
+    activePiece = null;
+    clearActive();
+    setAllInactive();
+}
+
+function pieceOverflow() {
+    for (let y = gridHeight - 1; y >= gridHeight - endZone; y -= 1) {
+        for (let x = 0; x < gridWidth; x += 1) {
+            const square = grid[`${x}*${y}`];
+            if (!square.active && square.color !== "blank") {
+                console.log("OVERFLOW");
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 let inPlay = false;
+let gameover = false;
 let prevMove = 0;
 const gracePeriod = 5;
 let clearableRows = [];
 let activePiece = null;
+let score = 0;
 
 function mainLoop() {
+    // if (pieceOverflow()) { onGameOver(); }
     shiftDownByRows(clearableRows);
     if (![undefined, null].includes(activePiece)) {
         const wasMoved = movePiece(activePiece, "down");
@@ -131,13 +157,17 @@ function resetGame() {
     console.log("game reset");
     ticks = 0;
     rowsCleared = 0;
+    score = 0;
+    gameover = false;
     // clock
     setInterval(() => {
-        if (inPlay && ticks % updateInterval === 0) {
-            mainLoop();
+        if (inPlay) {
+            if (ticks % updateInterval === 0 ) {
+                mainLoop();
+            }
+            update();
         }
         ticks += 1;
-        update();
     }, 10);
 }
 
@@ -200,6 +230,7 @@ function rotatePiece(piece, spinDir) {
         let wasMoved = false;
         wasMoved = movePiece(piece, nudge.direction);
         if (wasMoved) {
+            update();
             rotatePiece(piece, spinDir);
         }
         return wasMoved;
@@ -237,7 +268,7 @@ function newRandomPiece() {
     setAllInactive();
     const types = Object.keys(pieceTypes)
     const index = randomInt(0, types.length)
-    return newPiece(types[index], p(4,20), "right");
+    return newPiece(types[index], p(4,21), "up");
 }
 
 function setP(pos, color, active) {
@@ -274,11 +305,16 @@ function updateGrid() {
 function updateDom() {
     Object.keys(grid).forEach(key => {
         const square = document.getElementById(key)
-        square.className = `square ${grid[key].color}`
+        if (grid[key].active) {
+            square.className = `square ${grid[key].color}`
+        } else {
+            square.className = `square ${grid[key].color} ${grid[key].zone}`
+        }
     });
 }
 
 function update() {
+    if (pieceOverflow()) { onGameOver(); }
     updateGrid();
     updateDom();
 }
@@ -306,12 +342,20 @@ function shiftDown(rowNumber) {
     }
 }
 
+const rowScore = 100;
+
+function setScore(rowCount) {
+    rowsCleared += rowCount;
+    score += rowScore * rowCount * rowCount;
+    console.log(score);
+}
+
 function shiftDownByRows(rows2clear) {
     rows2clear = rows2clear.sort((a, b) => b - a);
     rows2clear.forEach(n => {
         shiftDown(n);
-        rowsCleared += 1;
     });
+    setScore(clearableRows.length);
     clearableRows = [];
 }
 
@@ -351,7 +395,12 @@ function onFirstInput(key) {
 }
 
 document.addEventListener('keydown', (event) => {
+    if (gameover) { return; }
     onFirstInput(event.key);
+    if (event.key === "Escape") {
+        console.log("escape");
+        inPlay = !inPlay;
+    }
     if (event.key === "ArrowUp") {
         rotatePiece(activePiece, "CW");
     }
