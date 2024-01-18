@@ -4,6 +4,7 @@
 
 body {
     background-color: black;
+    overflow: hidden;
 }
 
 #end-zone {
