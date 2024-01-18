@@ -1,0 +1,2 @@
+sometimes a line will clear with the exception of one or two
+members of the last active piece (because it's still active?)

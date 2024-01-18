@@ -1,0 +1,85 @@
+:root {
+    --grid-size: 3vmin;
+}
+
+body {
+    background-color: black;
+}
+
+table {
+    border-spacing: 0;
+}
+
+#grid-border {
+    border: 5px, solid, white;
+    background-color: blueviolet;
+}
+
+td {
+    padding: 0;
+    /* border-collapse: collapse; */
+    color: white;
+    font-size: 4vmin;
+}
+
+.square {
+    height: var(--grid-size);
+    width: var(--grid-size);
+    border-style: outset;
+    border-width: calc(var(--grid-size) * .2);
+    /* border-radius: 10px; */
+    opacity: 100%;
+    user-select: none;
+    /* scale: 1.07; */
+}
+
+/* UTILS */
+
+.container {
+    margin: auto;
+    /* height: 95vh; */
+    width: 100%;
+    /* background-color: aquamarine; */
+}
+
+.flex {
+    display: flex;
+}
+
+.no-wrap {
+    flex-wrap: nowrap;
+}
+
+.col {
+    flex-direction: column;
+}
+
+.align-c {
+    align-items: center;
+}
+
+.justify-c {
+    justify-content: center;
+}
+
+@keyframes fadeOutAnimation {
+    from {opacity: 100%;}
+    to {opacity: 20%;}
+}
+
+.cleared { animation: fadeOutAnimation 0.2s linear 0s normal forwards; }
+
+/* .cleared{ opacity: 0%; } */
+
+.blank  { opacity: 0%; }
+.red    { --color: hsl(0  , 100%, 44%); background-color: var(--color); border-color: var(--color); }
+._4     { --color: hsl(21 , 100%, 44%); background-color: var(--color); border-color: var(--color); }
+.orange { --color: hsl(42 , 100%, 44%); background-color: var(--color); border-color: var(--color); }
+.yellow { --color: hsl(64 , 100%, 44%); background-color: var(--color); border-color: var(--color); }
+._32    { --color: hsl(85 , 100%, 44%); background-color: var(--color); border-color: var(--color); }
+.green  { --color: hsl(106, 100%, 44%); background-color: var(--color); border-color: var(--color); }
+._128   { --color: hsl(127, 100%, 44%); background-color: var(--color); border-color: var(--color); }
+._256   { --color: hsl(149, 100%, 44%); background-color: var(--color); border-color: var(--color); }
+._512   { --color: hsl(170, 100%, 44%); background-color: var(--color); border-color: var(--color); }
+._1024  { --color: hsl(191, 100%, 44%); background-color: var(--color); border-color: var(--color); }
+.blue   { --color: hsl(213, 100%, 44%); background-color: var(--color); border-color: var(--color); }
