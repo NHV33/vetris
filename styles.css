@@ -6,6 +6,24 @@ body {
     background-color: black;
 }
 
+#start-message {
+    position: absolute;
+    color:white;
+    font-family: monospace;
+    font-size: 4vmin;
+    text-shadow: 1px, 1px, 5px, black;
+    z-index: 1;
+    text-align: center;
+}
+
+#start-message-text {
+    margin-bottom: 2vmin;
+}
+
+.t-left { text-align: left; }
+.t-right { text-align: right; }
+.t-center { text-align: center; }
+
 table {
     border-spacing: 0;
 }

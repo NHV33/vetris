@@ -150,7 +150,9 @@ const pieceTypes = {
     tet: { up: "n,uu,u,d", down: "n,uu,u,d", left: "n,rr,r,l", right: "n,ll,l,r", color: "red" },
     ses: { up: "n,d,dr,drd", down: "n,d,dr,drd", left: "d,dr,r,rr", right: "d,dr,r,rr", color: "green" },
     zaz: { up: "r,rd,d,dd", down: "r,rd,d,dd", left: "n,r,rd,rdr", right: "n,r,rd,rdr", color: "yellow" },
-    sqr: { up: "n,r,d,rd", down: "n,r,d,rd", left: "n,r,d,rd", right: "n,r,d,rd", color: "yellow" }
+    sqr: { up: "n,r,d,rd", down: "n,r,d,rd", left: "n,r,d,rd", right: "n,r,d,rd", color: "yellow" },
+    lam: { up: "u,n,d,dr", down: "ul,u,n,d", left: "l,n,r,ru", right: "r,n,l,ld", color: "orange" }
+    
 }
 
 function rotatePiece(piece, spinDir) {
@@ -306,8 +308,16 @@ function findClearable() {
     return rows2clear;
 }
 
-document.addEventListener('keydown', (event) => {
+const startMessage = document.getElementById('start-message');
+
+function onFirstInput() {
+    if (inPlay) { return; }
     inPlay = true;
+    startMessage.style.display = 'none';
+}
+
+document.addEventListener('keydown', (event) => {
+    onFirstInput();
     if (event.key === "ArrowUp") {
         rotatePiece(activePiece, "CW");
     }
