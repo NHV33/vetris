@@ -87,20 +87,24 @@ function slamDown(piece) {
     update();
 }
 
+let inPlay = false;
 let prevMove = 0;
 const gracePeriod = 5;
 let clearableRows = [];
+let activePiece = null;
 
 function mainLoop() {
     shiftDownByRows(clearableRows);
-    const wasMoved = movePiece(activePiece, "down");
-    if (wasMoved) { prevMove = ticks;}
+    if (![undefined, null].includes(activePiece)) {
+        const wasMoved = movePiece(activePiece, "down");
+        if (wasMoved) { prevMove = ticks;}
+    }
     if (ticks - prevMove > gracePeriod && clearableRows.length <= 0) {
-        placeNewPiece();
+        activePiece = newRandomPiece();
     }
     clearableRows = findClearable();
     markCleared(clearableRows);
-    update();
+    // update();
 }
 
 let ticks = 0;
@@ -110,10 +114,11 @@ function resetGame() {
     ticks = 0;
     // clock
     setInterval(() => {
-        if (ticks % updateInterval === 0) {
+        if (inPlay && ticks % updateInterval === 0) {
             mainLoop();
         }
         ticks += 1;
+        update();
     }, 10);
 }
 
@@ -149,6 +154,8 @@ const pieceTypes = {
 }
 
 function rotatePiece(piece, spinDir) {
+    if ([undefined, null].includes(piece)) { return false; }
+
     const rotations = {
         CW: { up: "right", right: "down", down: "left", left: "up" },
         CCW: { up: "left", left: "down", down: "right", right: "up" }
@@ -165,7 +172,8 @@ function rotatePiece(piece, spinDir) {
 }
 
 function movePiece(piece, direction) {
-    // console.log(pStatus(piece.positions[0]));
+    if ([undefined, null].includes(piece)) { return false; }
+
     const newPositions = translateAll(piece.positions, dirs[direction]);
     if (validMove(newPositions)) {
         piece.positions = newPositions;
@@ -190,11 +198,11 @@ function randomInt(min, max) {
     return Math.floor(Math.random() * (max - min) + min);
 }
 
-function placeNewPiece() {
+function newRandomPiece() {
     setAllInactive();
     const types = Object.keys(pieceTypes)
     const index = randomInt(0, types.length)
-    activePiece = newPiece(types[index], p(4,20), "up");
+    return newPiece(types[index], p(4,20), "up");
 }
 
 function setP(pos, color, active) {
@@ -220,6 +228,8 @@ function clearActive() {
 }
 
 function updateGrid() {
+    // return if activePiece is undefined or null
+    if ([undefined, null].includes(activePiece)) { return; }
     clearActive();
     activePiece.positions.forEach(pos => {
         setP(pos, activePiece.color, true);
@@ -264,11 +274,6 @@ function shiftDown(rowNumber) {
 
 function shiftDownByRows(rows2clear) {
     rows2clear = rows2clear.sort((a, b) => b - a);
-    if ( rows2clear.length > 0){
-
-        console.log(rows2clear);
-    }
-    // rows2clear.sort(function(a, b) { return a - b; });
     rows2clear.forEach(n => {
         shiftDown(n);
     });
@@ -280,7 +285,6 @@ function markCleared(rows2clear) {
     // ${grid[key].color}
     rows2clear.forEach(n => {
         gridRows[n].forEach(key => {
-            console.log(key);
             grid[key].color = "cleared";
             grid[key].active = false;
         });
@@ -293,24 +297,17 @@ function findClearable() {
         let fullLine = true;
         gridRows[n].forEach(key => {
             const square = grid[key];
-            if (["blank"].includes(square.color) || square.active) { fullLine = false; }
+            if (["blank"].includes(square.color) || square.active) {
+                fullLine = false;
+            }
         });
-        // console.log(fullLine, gridRows[n])
         if (fullLine) { rows2clear.push(n) }
     });
-    // clearSquares(rows2clear);
-    // console.log("rows2clear: ", rows2clear)
     return rows2clear;
 }
 
-let activePiece = newPiece("tri", p(4,4), "up");
-
-document.addEventListener('keyup', (event) => {
-    console.log(event.key);
-    // if (event.key === "a") {
-    //     resetGame();
-    //     console.log(ticks)
-    // }
+document.addEventListener('keydown', (event) => {
+    inPlay = true;
     if (event.key === "ArrowUp") {
         rotatePiece(activePiece, "CW");
     }
@@ -323,5 +320,4 @@ document.addEventListener('keyup', (event) => {
     if (event.key === "ArrowRight") {
         movePiece(activePiece, "right");
     }
-    update();
 });
