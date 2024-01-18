@@ -79,6 +79,22 @@ function validMove(positions) {
     return valid;
 }
 
+function calculateNudge(positions) {
+    let nudge = 0;
+    positions.forEach(pos => {
+        if (!inBounds(pos)) {
+            if (pos.x < 0 && pos.x <= (Math.abs(nudge) * 1)) {
+                nudge = pos.x;
+            } else if (pos.x >= gridWidth && pos.x >= Math.abs(nudge)) {
+                nudge = (pos.x - (gridWidth - 1));
+            }
+        } else {
+            if (!openPosition(pos)) { return null; }
+        }
+    });
+    return { amount: Math.abs(nudge), direction: (nudge >= 0) ? "left" : "right" };
+}
+
 function slamDown(piece) {
     let canMove = true;
     while (canMove) {
@@ -109,9 +125,12 @@ function mainLoop() {
 
 let ticks = 0;
 let updateInterval = 33; // smaller is faster
+let rowsCleared = 0;
+
 function resetGame() {
     console.log("game reset");
     ticks = 0;
+    rowsCleared = 0;
     // clock
     setInterval(() => {
         if (inPlay && ticks % updateInterval === 0) {
@@ -144,15 +163,18 @@ function offsetsFromRoot(root, routeString) {
     });
     return newPositions;
 }
-// ___: { up: "", down: "", left: "", right: "", color: "" }
+// ___: { up: "", down: "", left: "", right: "", color: "" },
 const pieceTypes = {
+    duo: { up: "n,u", down: "n,u", left: "n,r", right: "n,r", color: "green" },
     tri: { up: "n,l,u,r", down: "n,l,d,r", left: "n,u,l,d", right: "n,u,r,d", color: "blue" },
-    tet: { up: "n,uu,u,d", down: "n,uu,u,d", left: "n,rr,r,l", right: "n,ll,l,r", color: "red" },
+    tet: { up: "n,uu,u,d", down: "n,uu,u,d", left: "n,rr,r,l", right: "n,rr,r,l", color: "red" },
     ses: { up: "n,d,dr,drd", down: "n,d,dr,drd", left: "d,dr,r,rr", right: "d,dr,r,rr", color: "green" },
     zaz: { up: "r,rd,d,dd", down: "r,rd,d,dd", left: "n,r,rd,rdr", right: "n,r,rd,rdr", color: "yellow" },
     sqr: { up: "n,r,d,rd", down: "n,r,d,rd", left: "n,r,d,rd", right: "n,r,d,rd", color: "yellow" },
-    lam: { up: "u,n,d,dr", down: "ul,u,n,d", left: "l,n,r,ru", right: "r,n,l,ld", color: "orange" }
-    
+    lam: { up: "u,n,d,dr", down: "ul,u,n,d", left: "l,n,r,ru", right: "r,n,l,ld", color: "orange" },
+    gam: { up: "u,n,d,dl", down: "ur,u,n,d", left: "l,n,r,rd", right: "lu,l,n,r", color: "blue" },
+    // heh: { up: "n,lu,l,ld,ru,r,rd", down: "n,lu,l,ld,ru,r,rd", left: "n,ul,u,ur,dl,d,dr", right: "n,ul,u,ur,dl,d,dr", color: "yellow" },
+
 }
 
 function rotatePiece(piece, spinDir) {
@@ -169,8 +191,19 @@ function rotatePiece(piece, spinDir) {
         piece.direction = newDir;
         prevMove = ticks;
         return true;
+    } else {
+        // Nudging behavior is recursive.
+        // Nudge returns null if at least one square
+        // *in bounds* is not open.  
+        const nudge = calculateNudge(newPositions);
+        if (nudge === null) { return false; }
+        let wasMoved = false;
+        wasMoved = movePiece(piece, nudge.direction);
+        if (wasMoved) {
+            rotatePiece(piece, spinDir);
+        }
+        return wasMoved;
     }
-    return false;
 }
 
 function movePiece(piece, direction) {
@@ -204,7 +237,7 @@ function newRandomPiece() {
     setAllInactive();
     const types = Object.keys(pieceTypes)
     const index = randomInt(0, types.length)
-    return newPiece(types[index], p(4,20), "up");
+    return newPiece(types[index], p(4,20), "right");
 }
 
 function setP(pos, color, active) {
@@ -246,7 +279,6 @@ function updateDom() {
 }
 
 function update() {
-    // shiftDownAfterClear();
     updateGrid();
     updateDom();
 }
@@ -278,6 +310,7 @@ function shiftDownByRows(rows2clear) {
     rows2clear = rows2clear.sort((a, b) => b - a);
     rows2clear.forEach(n => {
         shiftDown(n);
+        rowsCleared += 1;
     });
     clearableRows = [];
 }
@@ -310,14 +343,15 @@ function findClearable() {
 
 const startMessage = document.getElementById('start-message');
 
-function onFirstInput() {
+function onFirstInput(key) {
     if (inPlay) { return; }
+    if (!["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(key)) { return; }
     inPlay = true;
     startMessage.style.display = 'none';
 }
 
 document.addEventListener('keydown', (event) => {
-    onFirstInput();
+    onFirstInput(event.key);
     if (event.key === "ArrowUp") {
         rotatePiece(activePiece, "CW");
     }
